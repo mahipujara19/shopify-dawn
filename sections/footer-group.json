@@ -59,14 +59,14 @@
           "type": "link_list",
           "settings": {
             "heading": "Shop",
-            "menu": ""
+            "menu": "footer-shop"
           }
         },
         "support_links": {
           "type": "link_list",
           "settings": {
             "heading": "Support",
-            "menu": ""
+            "menu": "footer-support"
           }
         }
       },
@@ -86,6 +86,7 @@
         "payment_enable": false,
         "show_policy": true,
         "policies_link_label": "Terms and Policies",
+        "policies_link_url": "",
         "margin_top": 0,
         "padding_top": 56,
         "padding_bottom": 40
