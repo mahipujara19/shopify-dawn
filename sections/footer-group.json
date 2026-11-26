@@ -85,6 +85,7 @@
         "enable_language_selector": false,
         "payment_enable": false,
         "show_policy": true,
+        "policies_link_label": "Terms and Policies",
         "margin_top": 0,
         "padding_top": 56,
         "padding_bottom": 40

@@ -141,6 +141,7 @@
 }
 
 .footer__policies-link a {
+  color: rgba(var(--color-foreground), 0.75);
   text-decoration: none;
 }
 
@@ -608,7 +609,8 @@
   column-gap: 2rem;
 }
 
-.footer__content-bottom-wrapper--reference .footer__copyright {
+.footer__content-bottom-wrapper--reference.footer__content-bottom-wrapper:not(.footer__content-bottom-wrapper--center) .footer__copyright {
+  justify-self: start;
   margin: 0;
   text-align: left;
 }
@@ -621,7 +623,7 @@
   justify-self: end;
 }
 
-@media screen and (max-width: 749px) {
+@media screen and (max-width: 599px) {
   .footer__content-bottom-wrapper--reference {
     grid-template-columns: 1fr;
     justify-items: center;

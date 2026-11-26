@@ -315,18 +315,32 @@
     <div class="footer__content-bottom-wrapper footer__content-bottom-wrapper--reference page-width">
       <div class="footer__copyright caption">
         <small class="copyright__content">
-          &copy; {{ 'now' | date: '%Y' }}, {{ shop.name | link_to: routes.root_url -}}
-          {{ powered_by_link }}
+          &copy; {{ 'now' | date: '%Y' }}, {{ shop.name | link_to: routes.root_url }}{{ ', ' }}{{ powered_by_link }}
         </small>
       </div>
 
       {%- if section.settings.show_policy -%}
         <div class="footer__policies-link">
-          {%- if shop.policies.size > 0 -%}
-            {%- assign policies_link = shop.policies.first -%}
-            <a class="copyright__content" href="{{ policies_link.url }}">Terms and Policies</a>
+          {%- if section.settings.policies_link_label != blank -%}
+            {%- if section.settings.policies_link_url != blank -%}
+              <a class="copyright__content" href="{{ section.settings.policies_link_url }}">
+                {{ section.settings.policies_link_label }}
+              </a>
+            {%- elsif shop.policies.size > 0 -%}
+              {%- assign policies_link = shop.policies.first -%}
+              <a class="copyright__content" href="{{ policies_link.url }}">
+                {{ section.settings.policies_link_label }}
+              </a>
+            {%- else -%}
+              <span class="copyright__content">{{ section.settings.policies_link_label }}</span>
+            {%- endif -%}
           {%- else -%}
-            <span class="copyright__content">Terms and Policies</span>
+            {%- if shop.policies.size > 0 -%}
+              {%- assign policies_link = shop.policies.first -%}
+              <a class="copyright__content" href="{{ policies_link.url }}">Terms and Policies</a>
+            {%- else -%}
+              <span class="copyright__content">Terms and Policies</span>
+            {%- endif -%}
           {%- endif -%}
         </div>
       {%- endif -%}
@@ -516,6 +530,17 @@
       "default": true,
       "label": "t:sections.footer.settings.show_policy.label",
       "info": "t:sections.footer.settings.show_policy.info"
+    },
+    {
+      "type": "text",
+      "id": "policies_link_label",
+      "default": "Terms and Policies",
+      "label": "Policies link label"
+    },
+    {
+      "type": "url",
+      "id": "policies_link_url",
+      "label": "Policies link"
     },
     {
       "type": "header",
