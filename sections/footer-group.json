@@ -1,4 +1,12 @@
-
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin theme editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
 {
   "name": "t:sections.footer.name",
   "type": "footer",
@@ -51,14 +59,14 @@
           "type": "link_list",
           "settings": {
             "heading": "Shop",
-            "menu": "shop"
+            "menu": ""
           }
         },
         "support_links": {
           "type": "link_list",
           "settings": {
             "heading": "Support",
-            "menu": "support"
+            "menu": ""
           }
         }
       },
@@ -68,7 +76,7 @@
         "support_links"
       ],
       "settings": {
-        "color_scheme": "scheme-footer-olive",
+        "color_scheme": "scheme-4",
         "newsletter_enable": false,
         "newsletter_heading": "Subscribe to our emails",
         "enable_follow_on_shop": false,
