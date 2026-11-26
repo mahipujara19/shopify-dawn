@@ -1,0 +1,40 @@
+# dependencies
+node_modules/
+
+# env (per-dev)
+.env
+.env.local
+.env.*.local
+
+# safe-push artifacts
+.shopify-tmp/
+backups/
+.deploy-history.log
+
+# per-dev pull state (never commit; tracks "did this dev pull-live recently")
+.shopify-pull-state.json
+
+# OS
+.DS_Store
+Thumbs.db
+
+# editor
+.vscode/
+.idea/
+
+# react build output is rebuilt — don't track
+react-app/**/node_modules/
+react-app/**/dist/
+react-app/**/build/
+
+# merchant-editable theme JSONs (these are owned by the live store, not by code)
+theme/config/settings_data.json
+theme/templates/*.json
+theme/templates/**/*.json
+theme/sections/*.json
+theme/locales/*.json
+
+# but DO track schemas and code
+!theme/config/settings_schema.json
+
+.claude/

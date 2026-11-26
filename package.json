@@ -1,0 +1,54 @@
+{
+  "name": "base-shopify-theme-template",
+  "version": "1.1.0",
+  "description": "Shopify theme dev harness with drift-safe deploys, deploy lock, and rollback snapshots.",
+  "private": true,
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "scripts": {
+    "preinstall": "node scripts/preinstall.js",
+    "prepare": "husky",
+
+    "setup": "node scripts/setup.js",
+
+    "info": "node scripts/info.js",
+    "login": "node scripts/login.js",
+    "logout": "shopify auth logout",
+
+    "dev": "node scripts/dev.js",
+
+    "pull": "node scripts/pull.js --target dev",
+    "pull-json": "node scripts/pull.js --target dev --json",
+    "pull-live": "node scripts/pull.js --target live",
+    "pull-json-live": "node scripts/pull.js --target live --json",
+    "pull-all-live": "node scripts/pull-all.js",
+
+    "push": "node scripts/push-dev.js",
+    "push-json": "node scripts/push-dev.js --json",
+
+    "push-live": "node scripts/safe-push.js --target live",
+    "push-json-live": "node scripts/safe-push.js --target live --json",
+    "push-all-live": "node scripts/push-all.js",
+    "push-live:force": "node scripts/safe-push.js --target live --force",
+    "push-json-live:force": "node scripts/safe-push.js --target live --json --force",
+    "push-all-live:force": "node scripts/push-all.js --force",
+
+    "backup-live": "node scripts/backup-live.js",
+    "rollback-create": "node scripts/rollback-create.js",
+
+    "lock:status": "node scripts/lock.js status",
+    "lock:acquire": "node scripts/lock.js acquire",
+    "lock:release": "node scripts/lock.js release",
+    "lock:break": "node scripts/lock.js break",
+
+    "theme-check": "shopify theme check --path ./theme",
+
+    "react-build": "cd react-app/the-7-oh-main && npm run build:shopify"
+  },
+  "devDependencies": {
+    "husky": "^9.1.7"
+  },
+  "author": "Ronit Jain",
+  "license": "ISC"
+}

@@ -1,0 +1,44 @@
+#!/usr/bin/env sh
+
+# ---- Hard block: never commit secrets or backups ----
+# Allows .env.example / .env.sample / .env.template (these are public templates).
+BLOCKED=$(git diff --cached --name-only \
+  | grep -E '^(\.env|backups/)' \
+  | grep -vE '\.(example|sample|template)$' \
+  || true)
+
+if [ -n "$BLOCKED" ]; then
+  echo "[pre-commit] Refusing to commit these files (gitignored for a reason):"
+  echo "$BLOCKED" | sed 's/^/  - /'
+  echo ""
+  echo "If you really meant to commit them, unstage with:"
+  echo "  git restore --staged $(echo "$BLOCKED" | tr '\n' ' ')"
+  exit 1
+fi
+
+# ---- Soft check: shopify theme check on staged liquid/json ----
+# Advisory by default — runs theme check and shows errors, but does NOT block
+# the commit. Set STRICT_THEME_CHECK=1 to make errors fail the commit.
+#
+# Why advisory: stock Shopify Dawn themes ship with ~30 false-positive errors
+# that the dev didn't author. theme/.theme-check.yml suppresses the worst, but
+# blocking on every commit still creates more friction than value for most teams.
+if command -v shopify >/dev/null 2>&1; then
+  CHANGED=$(git diff --cached --name-only --diff-filter=ACMR | grep -E '^theme/.*\.(liquid|json)$' || true)
+  if [ -n "$CHANGED" ]; then
+    echo "[pre-commit] running shopify theme check..."
+    if [ "$STRICT_THEME_CHECK" = "1" ]; then
+      shopify theme check --path ./theme --fail-level error || {
+        echo "[pre-commit] theme check failed (STRICT_THEME_CHECK=1)."
+        echo "Fix the errors, OR commit with --no-verify, OR unset STRICT_THEME_CHECK."
+        exit 1
+      }
+    else
+      shopify theme check --path ./theme --fail-level error || {
+        echo ""
+        echo "[pre-commit] theme check found issues (advisory only — commit proceeds)."
+        echo "Set STRICT_THEME_CHECK=1 to make these fail the commit."
+      }
+    fi
+  fi
+fi
