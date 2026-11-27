@@ -38,3 +38,4 @@ theme/locales/*.json
 !theme/config/settings_schema.json
 
 .claude/
+imports/
