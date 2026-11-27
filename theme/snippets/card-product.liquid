@@ -14,6 +14,7 @@
   @param {string} [section_id] - The section ID used to namespace card and quick-add element IDs.
   @param {boolean} [horizontal_class] - Whether to add the `card--horizontal` class. Defaults to `false`.
   @param {boolean} [horizontal_quick_add] - Whether to use horizontal quick-add styles. Defaults to `false`.
+  @param {boolean} [show_custom_badges] - Whether to show bestseller and new tag badges.
   @param {string} [placeholder_image] - The placeholder SVG name. Defaults to `product-apparel-2`.
   @param {string} [product_view_context] - The analytics context for the product-card view event, such as `collection`, `search`, or `recommendation`.
   @param {block} [block] - The current section block, used for optional card description content.
@@ -42,6 +43,9 @@
       assign ratio = 1
     endif
   -%}
+  {%- capture custom_tag_badges -%}
+    {%- render 'custom-product-card-tag-badges', product: card_product, show_custom_badges: show_custom_badges -%}
+  {%- endcapture -%}
 
   <product-component view-event-payload="{{ card_product | standard_event_data: 'view', context: product_view_context | escape }}">
     <div class="card-wrapper product-card-wrapper underline-links-hover">
@@ -129,6 +133,7 @@
               </h3>
             </div>
             <div class="card__badge {{ settings.badge_position }}">
+              {{- custom_tag_badges -}}
               {%- if card_product.available == false -%}
                 <span
                   id="NoMediaStandardBadge-{{ section_id }}-{{ card_product.id }}"
@@ -553,6 +558,7 @@
             {% endif %}
           {% endif %}
           <div class="card__badge {{ settings.badge_position }}">
+            {{- custom_tag_badges -}}
             {%- if card_product.available == false -%}
               <span
                 id="Badge-{{ section_id }}-{{ card_product.id }}"

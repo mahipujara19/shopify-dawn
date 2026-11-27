@@ -1,0 +1,387 @@
+{%- liquid
+  assign s = section.settings
+  assign has_apps = false
+  if s.app_store_url != blank or s.google_play_url != blank
+    assign has_apps = true
+  endif
+-%}
+
+{{ 'component-list-social.css' | asset_url | stylesheet_tag }}
+
+<footer
+  id="ModularDarkFooter-{{ section.id }}"
+  class="mdf"
+  style="
+    --mdf-bg: {{ s.background }};
+    --mdf-text: {{ s.text_color }};
+    --mdf-cols: {{ section.blocks.size | at_least: 1 }};
+    --mdf-pt: {{ s.padding_top }}px;
+    --mdf-pb: {{ s.padding_bottom }}px;
+  "
+>
+  <div class="page-width">
+    <div class="mdf__grid">
+      {%- comment -%} Left column: app download buttons when links are set, otherwise the brand. {%- endcomment -%}
+      <div class="mdf__lead">
+        {%- if has_apps -%}
+          {%- if s.app_heading != blank -%}
+            <h2 class="mdf__heading">{{ s.app_heading | escape }}</h2>
+          {%- endif -%}
+          <div class="mdf__apps">
+            {%- if s.app_store_url != blank -%}
+              <a class="mdf__app" href="{{ s.app_store_url }}" target="_blank" rel="noopener">
+                <span class="mdf__app-small">Download on the</span>
+                <span class="mdf__app-big">App Store</span>
+              </a>
+            {%- endif -%}
+            {%- if s.google_play_url != blank -%}
+              <a class="mdf__app" href="{{ s.google_play_url }}" target="_blank" rel="noopener">
+                <span class="mdf__app-small">Get it on</span>
+                <span class="mdf__app-big">Google Play</span>
+              </a>
+            {%- endif -%}
+          </div>
+        {%- else -%}
+          {%- if s.logo != blank -%}
+            <a href="{{ routes.root_url }}" class="mdf__logo" style="--mdf-logo-w: {{ s.logo_width }}px;">
+              {{
+                s.logo
+                | image_url: width: 600
+                | image_tag: sizes: '300px', widths: '150, 300, 600', loading: 'lazy', alt: shop.name
+              }}
+            </a>
+          {%- else -%}
+            <a href="{{ routes.root_url }}" class="mdf__wordmark">{{ shop.name | escape }}</a>
+          {%- endif -%}
+          {%- if s.bio != blank -%}
+            <div class="mdf__bio">{{ s.bio }}</div>
+          {%- endif -%}
+        {%- endif -%}
+      </div>
+
+      {%- for block in section.blocks -%}
+        <nav class="mdf__col" {{ block.shopify_attributes }} aria-label="{{ block.settings.heading | default: block.settings.menu.title | escape }}">
+          {%- if block.settings.heading != blank -%}
+            <h2 class="mdf__heading">{{ block.settings.heading | escape }}</h2>
+          {%- endif -%}
+          {%- if block.settings.menu != blank -%}
+            <ul class="mdf__links" role="list">
+              {%- for link in block.settings.menu.links -%}
+                <li>
+                  <a href="{{ link.url }}" {% if link.current %}aria-current="page"{% endif %}>{{ link.title | escape }}</a>
+                </li>
+              {%- endfor -%}
+            </ul>
+          {%- endif -%}
+        </nav>
+      {%- endfor -%}
+
+      <div class="mdf__signup">
+        {%- if s.show_newsletter -%}
+          {%- if s.newsletter_heading != blank -%}
+            <h2 class="mdf__heading">{{ s.newsletter_heading | escape }}</h2>
+          {%- endif -%}
+          {%- form 'customer', id: 'ModularFooterNewsletter', class: 'mdf__form' -%}
+            <input type="hidden" name="contact[tags]" value="newsletter">
+            <div class="mdf__field">
+              <label class="visually-hidden" for="MdfEmail-{{ section.id }}">{{ 'newsletter.label' | t }}</label>
+              <input
+                id="MdfEmail-{{ section.id }}"
+                class="mdf__input"
+                type="email"
+                name="contact[email]"
+                value="{{ form.email }}"
+                placeholder="{{ s.email_placeholder | escape }}"
+                autocomplete="email"
+                autocorrect="off"
+                autocapitalize="off"
+                required
+                aria-required="true"
+                {% if form.errors %}
+                  aria-invalid="true" aria-describedby="MdfError-{{ section.id }}"
+                {% elsif form.posted_successfully? %}
+                  aria-describedby="MdfSuccess-{{ section.id }}"
+                {% endif %}
+              >
+              <button type="submit" class="mdf__submit" name="commit" aria-label="{{ s.button_label | default: 'Subscribe' | escape }}">
+                <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" focusable="false"><path d="M9 5l7 7-7 7" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </button>
+            </div>
+            {%- if form.errors -%}
+              <p id="MdfError-{{ section.id }}" class="mdf__message mdf__message--error">
+                {{ form.errors.translated_fields.email | capitalize }}
+                {{ form.errors.messages.email }}
+              </p>
+            {%- elsif form.posted_successfully? -%}
+              <p id="MdfSuccess-{{ section.id }}" class="mdf__message" tabindex="-1" autofocus>
+                {{ 'newsletter.success' | t }}
+              </p>
+            {%- endif -%}
+          {%- endform -%}
+          {%- if s.legal_prefix != blank -%}
+            <p class="mdf__legal">
+              {{ s.legal_prefix | escape }}
+              {%- if shop.terms_of_service != blank %} <a href="{{ shop.terms_of_service.url }}">{{ shop.terms_of_service.title | escape }}</a>{% endif -%}
+              {%- if shop.terms_of_service != blank and shop.privacy_policy != blank %} and{% endif -%}
+              {%- if shop.privacy_policy != blank %} <a href="{{ shop.privacy_policy.url }}">{{ shop.privacy_policy.title | escape }}</a>{% endif -%}
+              .
+            </p>
+          {%- endif -%}
+        {%- endif -%}
+        {%- if s.show_social -%}
+          {%- render 'social-icons', class: 'mdf__social' -%}
+        {%- endif -%}
+      </div>
+    </div>
+
+    <div class="mdf__bottom">
+      <small class="mdf__copyright">&copy; {{ 'now' | date: '%Y' }} {{ shop.name | escape }}{% if s.copyright_text != blank %} &middot; {{ s.copyright_text | escape }}{% endif %}</small>
+      {%- if s.show_payment_icons and shop.enabled_payment_types.size > 0 -%}
+        <ul class="mdf__payments" role="list">
+          {%- for type in shop.enabled_payment_types -%}
+            <li>{{ type | payment_type_svg_tag: class: 'mdf__payment-icon' }}</li>
+          {%- endfor -%}
+        </ul>
+      {%- endif -%}
+    </div>
+  </div>
+
+  {%- if s.show_back_to_top -%}
+    <a href="#MainContent" class="mdf__top" aria-label="Back to top" data-mdf-top hidden>
+      <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true" focusable="false"><path d="M5 15l7-7 7 7" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </a>
+  {%- endif -%}
+</footer>
+
+{% stylesheet %}
+  .mdf {
+    background: var(--mdf-bg);
+    color: var(--mdf-text);
+    padding-top: calc(var(--mdf-pt) * 0.75);
+    padding-bottom: calc(var(--mdf-pb) * 0.75);
+  }
+  .mdf a { color: inherit; text-decoration: none; }
+  .mdf a:focus-visible, .mdf button:focus-visible { outline: 2px solid var(--mdf-text); outline-offset: 3px; }
+
+  .mdf__grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 4rem 2.4rem;
+  }
+  .mdf__signup { grid-column: 1 / -1; order: -1; }
+  .mdf__lead { grid-column: 1 / -1; }
+
+  .mdf__heading {
+    margin: 0 0 1.8rem;
+    font-size: 1.3rem;
+    line-height: 1.2;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--mdf-text);
+  }
+
+  /* Lead column */
+  .mdf__wordmark { display: inline-block; font-size: 2.4rem; font-weight: 800; letter-spacing: -0.02em; text-transform: uppercase; }
+  .mdf__logo { display: inline-block; width: var(--mdf-logo-w); max-width: 100%; }
+  .mdf__logo img { display: block; width: 100%; height: auto; }
+  .mdf__bio { margin-top: 1.4rem; max-width: 32rem; font-size: 1.4rem; line-height: 1.6; opacity: 0.7; }
+  .mdf__bio p { margin: 0; }
+  .mdf__apps { display: flex; flex-wrap: wrap; gap: 1.2rem; }
+  .mdf__app {
+    display: inline-flex;
+    flex-direction: column;
+    justify-content: center;
+    min-width: 13rem;
+    padding: 0.7rem 1.6rem;
+    border: 1px solid rgba(255, 255, 255, 0.75);
+    border-radius: 8px;
+    line-height: 1.1;
+    transition: background-color 0.2s ease;
+  }
+  .mdf__app:hover { background: rgba(255, 255, 255, 0.1); }
+  .mdf__app-small { font-size: 1rem; opacity: 0.85; }
+  .mdf__app-big { font-size: 1.8rem; font-weight: 600; }
+
+  /* Link columns */
+  .mdf__links { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.5rem; }
+  .mdf__links li { line-height: 1.3; }
+  .mdf__links a { display: inline-block; font-size: 1.45rem; line-height: 1.3; opacity: 0.85; transition: opacity 0.2s ease; }
+  .mdf__links a:hover { opacity: 1; text-decoration: underline; text-underline-offset: 0.25em; }
+
+  /* Newsletter column */
+  .mdf__field {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    height: 5.8rem;
+    padding: 0 0.8rem 0 2rem;
+    border-radius: 4px;
+    background: #fff;
+  }
+  .mdf__input {
+    flex: 1 1 auto;
+    min-width: 0;
+    height: 100%;
+    border: 0;
+    background: transparent;
+    color: #111;
+    font: inherit;
+    font-size: 1.4rem;
+  }
+  .mdf__input::placeholder { color: #6b6b6b; }
+  .mdf__input:focus { outline: none; }
+  .mdf__field:focus-within { box-shadow: 0 0 0 2px var(--mdf-text); }
+  .mdf__submit {
+    flex: 0 0 auto;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 4.2rem;
+    height: 4.2rem;
+    border: 0;
+    border-radius: 50%;
+    background: #ececec;
+    color: #111;
+    cursor: pointer;
+    transition: background-color 0.2s ease, transform 0.2s ease;
+  }
+  .mdf__submit:hover { background: #dcdcdc; transform: translateX(2px); }
+  .mdf__message { margin: 1rem 0 0; font-size: 1.3rem; }
+  .mdf__message--error { color: #ff8a80; }
+  .mdf__legal { margin: 1.4rem 0 0; max-width: 46rem; font-size: 1.2rem; line-height: 1.5; opacity: 0.85; }
+  .mdf__legal a { text-decoration: underline; text-underline-offset: 0.2em; }
+
+  .mdf .mdf__social { justify-content: flex-start; gap: 2rem; margin: 2.8rem 0 0; padding: 0; }
+  .mdf .mdf__social .list-social__link { padding: 0; color: var(--mdf-text); opacity: 0.9; transition: opacity 0.2s ease, transform 0.2s ease; }
+  .mdf .mdf__social .list-social__link:hover { opacity: 1; transform: translateY(-2px); }
+  .mdf .mdf__social .svg-wrapper, .mdf .mdf__social svg { width: 2.2rem; height: 2.2rem; }
+
+  /* Bottom bar */
+  .mdf__bottom {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1.6rem;
+    margin-top: 4.8rem;
+    padding-top: 2.4rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.14);
+  }
+  .mdf__copyright { font-size: 1.25rem; opacity: 0.6; }
+  .mdf__payments { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 0.6rem; }
+  .mdf__payment-icon { height: 2.4rem; width: auto; }
+
+  /* Back to top */
+  .mdf__top {
+    position: fixed;
+    right: 2rem;
+    bottom: 2rem;
+    z-index: 20;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 4.8rem;
+    height: 4.8rem;
+    border-radius: 50%;
+    background: #fff;
+    color: #111 !important;
+    box-shadow: 0 8px 24px -8px rgba(0, 0, 0, 0.45);
+    transition: transform 0.2s ease, opacity 0.2s ease;
+  }
+  .mdf__top[hidden] { display: none; }
+  .mdf__top:hover { transform: translateY(-3px); }
+
+  @media screen and (min-width: 750px) {
+    .mdf__grid { grid-template-columns: repeat(calc(var(--mdf-cols) + 1), minmax(0, 1fr)); }
+    .mdf__lead { grid-column: auto; }
+  }
+  @media screen and (min-width: 990px) {
+    .mdf { padding-top: var(--mdf-pt); padding-bottom: var(--mdf-pb); }
+    .mdf__grid {
+      grid-template-columns: minmax(0, 1.4fr) repeat(var(--mdf-cols), minmax(0, 0.75fr)) minmax(0, 1.9fr);
+      gap: 3.2rem;
+    }
+    .mdf__signup { grid-column: auto; order: 0; padding-left: 2.4rem; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .mdf__submit, .mdf__top, .mdf .mdf__social .list-social__link { transition: none; }
+  }
+{% endstylesheet %}
+
+{% javascript %}
+  (() => {
+    const button = document.querySelector('[data-mdf-top]');
+    if (!button) return;
+    const toggle = () => { button.hidden = window.scrollY < 600; };
+    window.addEventListener('scroll', toggle, { passive: true });
+    toggle();
+    button.addEventListener('click', (event) => {
+      event.preventDefault();
+      const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      window.scrollTo({ top: 0, behavior: reduce ? 'auto' : 'smooth' });
+    });
+  })();
+{% endjavascript %}
+
+{% schema %}
+{
+  "name": "Modular: Dark footer",
+  "tag": "div",
+  "class": "section",
+  "disabled_on": { "groups": ["header"] },
+  "max_blocks": 4,
+  "settings": [
+    { "type": "header", "content": "Left column" },
+    { "type": "paragraph", "content": "Shows app download buttons when an app link is set, otherwise your logo and bio." },
+    { "type": "text", "id": "app_heading", "label": "App heading", "default": "Shop faster with the app" },
+    { "type": "url", "id": "app_store_url", "label": "App Store link" },
+    { "type": "url", "id": "google_play_url", "label": "Google Play link" },
+    { "type": "image_picker", "id": "logo", "label": "Logo", "info": "Falls back to the store name." },
+    { "type": "range", "id": "logo_width", "label": "Logo width", "min": 60, "max": 300, "step": 10, "unit": "px", "default": 140 },
+    { "type": "richtext", "id": "bio", "label": "Brand bio", "default": "<p>Everyday clothing built to move, made to last, and designed to look good doing both.</p>" },
+    { "type": "header", "content": "Newsletter" },
+    { "type": "checkbox", "id": "show_newsletter", "label": "Show newsletter signup", "default": true },
+    { "type": "text", "id": "newsletter_heading", "label": "Heading", "default": "Get early access + updates" },
+    { "type": "text", "id": "email_placeholder", "label": "Email placeholder", "default": "Email address" },
+    { "type": "text", "id": "button_label", "label": "Button label (for screen readers)", "default": "Subscribe" },
+    {
+      "type": "text",
+      "id": "legal_prefix",
+      "label": "Consent text",
+      "default": "By signing up for email, you agree to our",
+      "info": "Followed by links to your Terms of Service and Privacy Policy when those policies exist."
+    },
+    { "type": "checkbox", "id": "show_social", "label": "Show social icons", "default": true, "info": "Links are set in Theme settings > Social media." },
+    { "type": "header", "content": "Bottom bar" },
+    { "type": "text", "id": "copyright_text", "label": "Extra copyright text" },
+    { "type": "checkbox", "id": "show_payment_icons", "label": "Show payment icons", "default": true },
+    { "type": "checkbox", "id": "show_back_to_top", "label": "Show back-to-top button", "default": true },
+    { "type": "header", "content": "Colors" },
+    { "type": "color", "id": "background", "label": "Background", "default": "#000000" },
+    { "type": "color", "id": "text_color", "label": "Text", "default": "#FFFFFF" },
+    { "type": "header", "content": "Padding" },
+    { "type": "range", "id": "padding_top", "label": "Top", "min": 0, "max": 120, "step": 4, "unit": "px", "default": 48 },
+    { "type": "range", "id": "padding_bottom", "label": "Bottom", "min": 0, "max": 120, "step": 4, "unit": "px", "default": 28 }
+  ],
+  "blocks": [
+    {
+      "type": "link_list",
+      "name": "Menu column",
+      "settings": [
+        { "type": "text", "id": "heading", "label": "Heading", "default": "Help" },
+        { "type": "link_list", "id": "menu", "label": "Menu", "default": "footer" }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Modular: Dark footer",
+      "blocks": [
+        { "type": "link_list", "settings": { "heading": "Shop", "menu": "main-menu" } },
+        { "type": "link_list", "settings": { "heading": "Help" } }
+      ]
+    }
+  ]
+}
+{% endschema %}
