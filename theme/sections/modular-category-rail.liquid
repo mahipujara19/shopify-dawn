@@ -1,0 +1,295 @@
+{%- assign s = section.settings -%}
+
+<section
+  id="ModularCategoryRail-{{ section.id }}"
+  class="mcr mcr--{{ s.layout }}"
+  style="
+    --mcr-cols: {{ s.columns_desktop }};
+    --mcr-bg: {{ s.background }};
+    --mcr-text: {{ s.text_color }};
+    --mcr-ratio: {{ s.image_ratio }};
+    --mcr-pt: {{ s.padding_top }}px;
+    --mcr-pb: {{ s.padding_bottom }}px;
+  "
+>
+  <div class="page-width">
+    {%- if s.eyebrow != blank or s.title != blank -%}
+      <div class="mcr__header">
+        <div>
+          {%- if s.eyebrow != blank -%}
+            <span class="mcr__eyebrow">{{ s.eyebrow | escape }}</span>
+          {%- endif -%}
+          {%- if s.title != blank -%}
+            <h2 class="mcr__title">{{ s.title | escape }}</h2>
+          {%- endif -%}
+        </div>
+        {%- if s.view_all_label != blank -%}
+          <a class="mcr__view-all" href="{{ s.view_all_link | default: routes.collections_url }}">{{ s.view_all_label | escape }}</a>
+        {%- endif -%}
+      </div>
+    {%- endif -%}
+
+    <ul class="mcr__list" role="list">
+      {%- for block in section.blocks -%}
+        {%- liquid
+          assign col = block.settings.collection
+          assign card_image = block.settings.image
+          if card_image == blank and col != blank
+            assign card_image = col.featured_image
+            if card_image == blank
+              assign card_image = col.products.first.featured_media.preview_image
+            endif
+          endif
+          assign card_title = block.settings.title | default: col.title | default: 'Category'
+        -%}
+        <li class="mcr__item" {{ block.shopify_attributes }}>
+          <a
+            class="mcr__card"
+            {% if col != blank %}
+              href="{{ col.url }}"
+            {% else %}
+              role="link" aria-disabled="true"
+            {% endif %}
+          >
+            {%- if card_image != blank -%}
+              {{
+                card_image
+                | image_url: width: 1200
+                | image_tag:
+                  class: 'mcr__img',
+                  widths: '400, 600, 800, 1200',
+                  sizes: '(min-width: 990px) 33vw, 80vw',
+                  loading: 'lazy',
+                  alt: card_title
+              }}
+            {%- else -%}
+              {%- capture placeholder -%}collection-{{ forloop.index | modulo: 6 | plus: 1 }}{%- endcapture -%}
+              {{ placeholder | placeholder_svg_tag: 'mcr__img mcr__img--placeholder' }}
+            {%- endif -%}
+            {%- if s.show_count and col != blank -%}
+              <span class="mcr__badge">
+                {{- col.products_count }}
+                {% if col.products_count == 1 %}{{ s.count_singular | escape }}{% else %}{{ s.count_plural | escape }}{% endif -%}
+              </span>
+            {%- endif -%}
+            <span class="mcr__overlay">
+              <span class="mcr__name">{{ card_title | escape }}</span>
+              {%- if s.cta_label != blank -%}
+                <span class="mcr__cta">{{ s.cta_label | escape }}</span>
+              {%- endif -%}
+            </span>
+          </a>
+        </li>
+      {%- endfor -%}
+    </ul>
+  </div>
+</section>
+
+{% stylesheet %}
+  .mcr {
+    padding-top: calc(var(--mcr-pt) * 0.75);
+    padding-bottom: calc(var(--mcr-pb) * 0.75);
+    background: var(--mcr-bg);
+    color: var(--mcr-text);
+  }
+  .mcr__header {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 1.6rem;
+    margin-bottom: 2.4rem;
+  }
+  .mcr__eyebrow {
+    display: block;
+    margin-bottom: 0.6rem;
+    font-size: 1.2rem;
+    font-weight: 700;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    opacity: 0.6;
+  }
+  .mcr__title {
+    margin: 0;
+    font-size: clamp(2.8rem, 3.8vw, 4.8rem);
+    line-height: 0.95;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    text-transform: uppercase;
+    color: var(--mcr-text);
+  }
+  .mcr__view-all {
+    flex: 0 0 auto;
+    color: inherit;
+    font-size: 1.3rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    text-underline-offset: 0.4em;
+  }
+  .mcr__list { list-style: none; margin: 0; padding: 0; display: grid; gap: 1.2rem; }
+  .mcr--scroll .mcr__list {
+    grid-auto-flow: column;
+    grid-auto-columns: 78%;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none;
+  }
+  .mcr--scroll .mcr__list::-webkit-scrollbar { display: none; }
+  .mcr--scroll .mcr__item { scroll-snap-align: start; }
+  .mcr--grid .mcr__list { grid-template-columns: 1fr; }
+  .mcr__card {
+    position: relative;
+    display: block;
+    aspect-ratio: var(--mcr-ratio);
+    border-radius: 16px;
+    overflow: hidden;
+    background: #e9e9e9;
+    color: #fff;
+    text-decoration: none;
+    isolation: isolate;
+  }
+  .mcr__img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.8s cubic-bezier(0.2, 0.7, 0.2, 1);
+  }
+  .mcr__card::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.1) 50%, transparent 70%);
+    transition: opacity 0.4s ease;
+  }
+  .mcr__card:hover .mcr__img,
+  .mcr__card:focus-visible .mcr__img { transform: scale(1.07); }
+  .mcr__card:focus-visible { outline: 3px solid var(--mcr-text); outline-offset: 3px; }
+  .mcr__badge {
+    position: absolute;
+    top: 1.4rem;
+    left: 1.4rem;
+    z-index: 2;
+    padding: 0.5rem 1.2rem;
+    border-radius: 999px;
+    background: #fff;
+    color: #0b0b0b;
+    font-size: 1.1rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+  .mcr__overlay {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    gap: 0.8rem;
+    padding: 2.4rem;
+  }
+  .mcr__name {
+    font-size: clamp(2.2rem, 2.6vw, 3.2rem);
+    line-height: 1;
+    font-weight: 800;
+    letter-spacing: -0.01em;
+    text-transform: uppercase;
+  }
+  .mcr__cta {
+    align-self: flex-start;
+    padding-bottom: 0.3rem;
+    border-bottom: 2px solid currentColor;
+    font-size: 1.2rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    transition: letter-spacing 0.3s ease;
+  }
+  .mcr__card:hover .mcr__cta { letter-spacing: 0.18em; }
+
+  @supports (animation-timeline: view()) {
+    .mcr__item { animation: mcr-reveal linear both; animation-timeline: view(); animation-range: entry 0% entry 45%; }
+  }
+  @keyframes mcr-reveal { from { opacity: 0; transform: translateY(40px); } to { opacity: 1; transform: none; } }
+
+  @media screen and (min-width: 750px) {
+    .mcr { padding-top: var(--mcr-pt); padding-bottom: var(--mcr-pb); }
+    .mcr__list { gap: 1.6rem; }
+    .mcr--scroll .mcr__list { grid-auto-columns: calc((100% - (var(--mcr-cols) - 1) * 1.6rem) / var(--mcr-cols)); }
+    .mcr--grid .mcr__list { grid-template-columns: repeat(var(--mcr-cols), minmax(0, 1fr)); }
+    .mcr__overlay { padding: 3.2rem; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .mcr__img, .mcr__cta { transition: none; }
+    .mcr__item { animation: none !important; }
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "Modular: Category rail",
+  "tag": "div",
+  "class": "section",
+  "disabled_on": { "groups": ["header", "footer"] },
+  "max_blocks": 12,
+  "settings": [
+    { "type": "text", "id": "eyebrow", "label": "Eyebrow label", "default": "Shop by category" },
+    { "type": "text", "id": "title", "label": "Section title", "default": "Find your fit" },
+    { "type": "text", "id": "view_all_label", "label": "View all label", "default": "View all" },
+    { "type": "url", "id": "view_all_link", "label": "View all link", "info": "Defaults to all collections." },
+    { "type": "text", "id": "cta_label", "label": "Card link text", "default": "Shop now" },
+    {
+      "type": "select",
+      "id": "layout",
+      "label": "Layout",
+      "options": [
+        { "value": "scroll", "label": "Horizontal scroll" },
+        { "value": "grid", "label": "Grid" }
+      ],
+      "default": "scroll"
+    },
+    { "type": "range", "id": "columns_desktop", "label": "Cards per row (desktop)", "min": 2, "max": 6, "step": 1, "default": 3 },
+    {
+      "type": "select",
+      "id": "image_ratio",
+      "label": "Card shape",
+      "options": [
+        { "value": "1 / 1", "label": "Square" },
+        { "value": "4 / 5", "label": "Portrait" },
+        { "value": "3 / 4", "label": "Tall" },
+        { "value": "2 / 3", "label": "Extra tall" }
+      ],
+      "default": "3 / 4"
+    },
+    { "type": "checkbox", "id": "show_count", "label": "Show item count badge", "default": true },
+    { "type": "text", "id": "count_singular", "label": "Count label (singular)", "default": "item" },
+    { "type": "text", "id": "count_plural", "label": "Count label (plural)", "default": "items" },
+    { "type": "header", "content": "Colors" },
+    { "type": "color", "id": "background", "label": "Background", "default": "#FFFFFF" },
+    { "type": "color", "id": "text_color", "label": "Text", "default": "#0B0B0B" },
+    { "type": "header", "content": "Section padding" },
+    { "type": "range", "id": "padding_top", "label": "Top", "min": 0, "max": 100, "step": 4, "unit": "px", "default": 56 },
+    { "type": "range", "id": "padding_bottom", "label": "Bottom", "min": 0, "max": 100, "step": 4, "unit": "px", "default": 56 }
+  ],
+  "blocks": [
+    {
+      "type": "collection",
+      "name": "Category",
+      "settings": [
+        { "type": "collection", "id": "collection", "label": "Collection" },
+        { "type": "image_picker", "id": "image", "label": "Image override", "info": "Defaults to the collection image." },
+        { "type": "text", "id": "title", "label": "Name override", "info": "Defaults to the collection title." }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Modular: Category rail",
+      "blocks": [{ "type": "collection" }, { "type": "collection" }, { "type": "collection" }]
+    }
+  ]
+}
+{% endschema %}

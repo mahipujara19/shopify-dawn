@@ -1,0 +1,302 @@
+{%- liquid
+  assign s = section.settings
+  assign heading_tag = s.heading_tag | default: 'h2'
+
+  assign hero_image = s.image
+  if hero_image == blank and s.collection != blank
+    assign hero_image = s.collection.featured_image
+  endif
+
+  assign link_1 = s.button_link_1
+  if link_1 == blank and s.collection != blank
+    assign link_1 = s.collection.url
+  endif
+-%}
+
+<section
+  id="ModularEditorialHero-{{ section.id }}"
+  class="meh meh--{{ s.layout }} meh--align-{{ s.content_position }}{% if s.enable_zoom %} meh--zoom{% endif %}"
+  style="
+    --meh-panel-bg: {{ s.panel_bg }};
+    --meh-text: {{ s.text_color }};
+    --meh-accent: {{ s.accent_color }};
+    --meh-accent-text: {{ s.accent_text_color }};
+    --meh-overlay: {{ s.overlay_opacity | divided_by: 100.0 }};
+    --meh-card-alpha: {{ s.card_opacity | divided_by: 100.0 }};
+    --meh-min-h: {{ s.min_height }}vh;
+    --meh-pt: {{ s.padding_top }}px;
+    --meh-pb: {{ s.padding_bottom }}px;
+  "
+>
+  <div class="meh__inner">
+    <div class="meh__media">
+      {%- if hero_image != blank -%}
+        {{
+          hero_image
+          | image_url: width: 3000
+          | image_tag:
+            class: 'meh__img meh__img--desktop',
+            widths: '750, 1100, 1500, 2000, 2500, 3000',
+            sizes: '100vw',
+            loading: 'eager',
+            fetchpriority: 'high',
+            alt: hero_image.alt
+        }}
+        {%- if s.image_mobile != blank -%}
+          {{
+            s.image_mobile
+            | image_url: width: 1500
+            | image_tag:
+              class: 'meh__img meh__img--mobile',
+              widths: '500, 750, 1000, 1500',
+              sizes: '100vw',
+              loading: 'eager',
+              alt: s.image_mobile.alt
+          }}
+        {%- endif -%}
+      {%- else -%}
+        {{ 'lifestyle-1' | placeholder_svg_tag: 'meh__img meh__img--placeholder' }}
+      {%- endif -%}
+    </div>
+
+    <div class="meh__panel">
+      <div class="meh__content">
+        {%- if s.eyebrow != blank -%}
+          <span class="meh__eyebrow">{{ s.eyebrow | escape }}</span>
+        {%- endif -%}
+        {%- if s.heading != blank -%}
+          <{{ heading_tag }} class="meh__heading">{{ s.heading | escape }}</{{ heading_tag }}>
+        {%- endif -%}
+        {%- if s.subtitle != blank -%}
+          <div class="meh__subtitle">{{ s.subtitle }}</div>
+        {%- endif -%}
+        {%- if s.button_label_1 != blank or s.button_label_2 != blank -%}
+          <div class="meh__ctas">
+            {%- if s.button_label_1 != blank -%}
+              <a
+                class="meh__btn meh__btn--solid"
+                {% if link_1 != blank %}
+                  href="{{ link_1 }}"
+                {% else %}
+                  role="link" aria-disabled="true"
+                {% endif %}
+              >
+                {{- s.button_label_1 | escape -}}
+              </a>
+            {%- endif -%}
+            {%- if s.button_label_2 != blank -%}
+              <a
+                class="meh__btn meh__btn--outline"
+                {% if s.button_link_2 != blank %}
+                  href="{{ s.button_link_2 }}"
+                {% else %}
+                  role="link" aria-disabled="true"
+                {% endif %}
+              >
+                {{- s.button_label_2 | escape -}}
+              </a>
+            {%- endif -%}
+          </div>
+        {%- endif -%}
+      </div>
+    </div>
+  </div>
+</section>
+
+{% stylesheet %}
+  .meh {
+    padding-top: calc(var(--meh-pt) * 0.75);
+    padding-bottom: calc(var(--meh-pb) * 0.75);
+    color: var(--meh-text);
+  }
+  .meh__inner { position: relative; display: grid; overflow: hidden; }
+  .meh__media { position: relative; overflow: hidden; background: #1a1a1a; }
+  .meh__img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 1.6s cubic-bezier(0.2, 0.7, 0.2, 1);
+  }
+  .meh__img--mobile { display: none; }
+  .meh--zoom .meh__img { animation: meh-zoom 2.4s cubic-bezier(0.2, 0.7, 0.2, 1) both; }
+  .meh--zoom .meh__inner:hover .meh__img { transform: scale(1.03); }
+  @keyframes meh-zoom { from { transform: scale(1.12); } to { transform: scale(1); } }
+
+  .meh__content > * { animation: meh-rise 0.9s cubic-bezier(0.2, 0.7, 0.2, 1) both; }
+  .meh__content > *:nth-child(2) { animation-delay: 0.1s; }
+  .meh__content > *:nth-child(3) { animation-delay: 0.2s; }
+  .meh__content > *:nth-child(4) { animation-delay: 0.3s; }
+  @keyframes meh-rise { from { opacity: 0; transform: translateY(28px); } to { opacity: 1; transform: none; } }
+
+  .meh__eyebrow {
+    display: inline-block;
+    margin-bottom: 1.6rem;
+    font-size: 1.2rem;
+    font-weight: 700;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+  }
+  .meh__heading {
+    margin: 0 0 1.6rem;
+    font-size: clamp(4.2rem, 7.4vw, 10.4rem);
+    line-height: 0.92;
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    text-transform: uppercase;
+    color: inherit;
+  }
+  .meh__subtitle { margin: 0 0 2.8rem; max-width: 46ch; font-size: 1.6rem; line-height: 1.55; opacity: 0.88; }
+  .meh__subtitle p { margin: 0; }
+  .meh__ctas { display: flex; flex-wrap: wrap; gap: 1.2rem; }
+  .meh__btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 5rem;
+    padding: 0 3.2rem;
+    border-radius: 999px;
+    font-size: 1.35rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    text-decoration: none;
+    border: 2px solid var(--meh-accent);
+    transition: background-color 0.25s ease, color 0.25s ease, transform 0.25s ease;
+  }
+  .meh__btn--solid { background: var(--meh-accent); color: var(--meh-accent-text); }
+  .meh__btn--solid:hover { transform: translateY(-2px); }
+  .meh__btn--outline { background: transparent; color: var(--meh-accent); }
+  .meh__btn--outline:hover { background: var(--meh-accent); color: var(--meh-accent-text); }
+  .meh__btn:focus-visible { outline: 2px solid var(--meh-accent); outline-offset: 3px; }
+
+  /* Overlay layout: full-bleed image, bold copy over it */
+  .meh--overlay .meh__inner { min-height: max(56rem, var(--meh-min-h)); }
+  .meh--overlay .meh__media { position: absolute; inset: 0; }
+  .meh--overlay .meh__media::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to top, rgba(0, 0, 0, var(--meh-overlay)) 0%, rgba(0, 0, 0, calc(var(--meh-overlay) * 0.35)) 45%, transparent 75%);
+  }
+  .meh--overlay .meh__panel {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    align-items: flex-end;
+    padding: 4rem 2rem 4.8rem;
+  }
+  .meh--overlay.meh--align-center .meh__panel { align-items: center; justify-content: center; text-align: center; }
+  .meh--overlay.meh--align-center .meh__ctas { justify-content: center; }
+  .meh--overlay.meh--align-center .meh__subtitle { margin-left: auto; margin-right: auto; }
+  .meh--overlay .meh__content { max-width: 80rem; }
+
+  /* Split layout: 60% image / 40% panel with glass card */
+  .meh--split .meh__media { min-height: 44rem; }
+  .meh--split .meh__panel {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 3.2rem 2rem;
+    background: var(--meh-panel-bg);
+  }
+  .meh--split .meh__content {
+    width: 100%;
+    max-width: 52rem;
+    padding: 3.2rem 2.8rem;
+    border-radius: 20px;
+    background: rgba(255, 255, 255, var(--meh-card-alpha));
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    box-shadow: 0 24px 60px -28px rgba(0, 0, 0, 0.45);
+    -webkit-backdrop-filter: blur(14px) saturate(140%);
+    backdrop-filter: blur(14px) saturate(140%);
+  }
+  .meh--split .meh__heading { font-size: clamp(3.6rem, 4.6vw, 6.4rem); }
+
+  @media screen and (max-width: 749px) {
+    .meh__img--mobile { display: block; }
+    .meh__img--mobile + .meh__img--desktop,
+    .meh__img--desktop:has(+ .meh__img--mobile) { display: none; }
+    .meh--overlay .meh__inner { min-height: 82svh; }
+  }
+  @media screen and (min-width: 750px) {
+    .meh { padding-top: var(--meh-pt); padding-bottom: var(--meh-pb); }
+    .meh--overlay .meh__panel { padding: 6.4rem 5rem 7.2rem; }
+  }
+  @media screen and (min-width: 990px) {
+    .meh--split .meh__inner { grid-template-columns: 3fr 2fr; min-height: max(56rem, var(--meh-min-h)); }
+    .meh--split .meh__media { min-height: 0; }
+    .meh--split .meh__panel { padding: 4.8rem; }
+    .meh--split .meh__content { margin-left: -12rem; padding: 4.8rem 4.4rem; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .meh__img, .meh__content > * { animation: none !important; transition: none; }
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "Modular: Editorial hero",
+  "tag": "div",
+  "class": "section",
+  "disabled_on": { "groups": ["header", "footer"] },
+  "settings": [
+    {
+      "type": "select",
+      "id": "layout",
+      "label": "Layout",
+      "options": [
+        { "value": "overlay", "label": "Full-bleed image, text over image" },
+        { "value": "split", "label": "Split 60/40 with glass card" }
+      ],
+      "default": "overlay"
+    },
+    {
+      "type": "select",
+      "id": "content_position",
+      "label": "Text position (full-bleed)",
+      "options": [
+        { "value": "bottom-left", "label": "Bottom left" },
+        { "value": "center", "label": "Center" }
+      ],
+      "default": "bottom-left"
+    },
+    { "type": "header", "content": "Media" },
+    { "type": "image_picker", "id": "image", "label": "Image", "info": "Falls back to the collection image below." },
+    { "type": "image_picker", "id": "image_mobile", "label": "Mobile image (optional)" },
+    { "type": "collection", "id": "collection", "label": "Featured collection", "info": "Used for the image fallback and the primary button link." },
+    { "type": "checkbox", "id": "enable_zoom", "label": "Zoom-in on load", "default": true },
+    { "type": "range", "id": "min_height", "label": "Height", "min": 50, "max": 100, "step": 5, "unit": "vh", "default": 90 },
+    { "type": "range", "id": "overlay_opacity", "label": "Image darkening", "min": 0, "max": 90, "step": 5, "unit": "%", "default": 60 },
+    { "type": "header", "content": "Content" },
+    { "type": "text", "id": "eyebrow", "label": "Eyebrow tag", "default": "New season drop" },
+    { "type": "text", "id": "heading", "label": "Headline", "default": "Made to move with you" },
+    {
+      "type": "select",
+      "id": "heading_tag",
+      "label": "Headline tag",
+      "options": [
+        { "value": "h1", "label": "H1" },
+        { "value": "h2", "label": "H2" }
+      ],
+      "default": "h2"
+    },
+    { "type": "richtext", "id": "subtitle", "label": "Subtitle", "default": "<p>Heavyweight basics, sharp layers and everyday staples built to keep up.</p>" },
+    { "type": "text", "id": "button_label_1", "label": "Primary button label", "default": "Shop new arrivals" },
+    { "type": "url", "id": "button_link_1", "label": "Primary button link", "info": "Defaults to the featured collection." },
+    { "type": "text", "id": "button_label_2", "label": "Secondary button label", "default": "Best sellers" },
+    { "type": "url", "id": "button_link_2", "label": "Secondary button link" },
+    { "type": "header", "content": "Colors" },
+    { "type": "color", "id": "text_color", "label": "Text", "default": "#FFFFFF" },
+    { "type": "color", "id": "accent_color", "label": "Button", "default": "#FFFFFF" },
+    { "type": "color", "id": "accent_text_color", "label": "Button text", "default": "#0B0B0B" },
+    { "type": "color", "id": "panel_bg", "label": "Panel background (split)", "default": "#EFE7DC" },
+    { "type": "range", "id": "card_opacity", "label": "Glass card opacity (split)", "min": 0, "max": 100, "step": 5, "unit": "%", "default": 55 },
+    { "type": "header", "content": "Section padding" },
+    { "type": "range", "id": "padding_top", "label": "Top", "min": 0, "max": 100, "step": 4, "unit": "px", "default": 0 },
+    { "type": "range", "id": "padding_bottom", "label": "Bottom", "min": 0, "max": 100, "step": 4, "unit": "px", "default": 0 }
+  ],
+  "presets": [{ "name": "Modular: Editorial hero" }]
+}
+{% endschema %}
