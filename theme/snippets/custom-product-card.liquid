@@ -1,0 +1,74 @@
+{% doc %}
+  Renders a reusable product card.
+
+  @param {product} product - The product to display.
+
+  @example
+  {% render 'custom-product-card', product: product %}
+{% enddoc %}
+{{ 'custom-product-card.css' | asset_url | stylesheet_tag }}
+
+{%- if product != blank -%}
+  {%- liquid
+    assign on_sale = false
+
+    if product.compare_at_price > product.price
+      assign on_sale = true
+    endif
+  -%}
+  {%- capture custom_tag_badges -%}
+    {%- render 'custom-product-card-tag-badges', product: product, show_custom_badges: true -%}
+  {%- endcapture -%}
+
+  <article class="custom-product-card">
+    <div class="custom-product-card__media">
+      {%- if custom_tag_badges != blank or product.available == false or on_sale -%}
+        <div class="custom-product-card__badges">
+          {{- custom_tag_badges -}}
+          {%- if product.available == false -%}
+            <span class="custom-product-card__badge custom-product-card__badge--sold-out">Sold Out</span>
+          {%- endif -%}
+          {%- if on_sale -%}
+            <span class="custom-product-card__badge custom-product-card__badge--sale">Sale</span>
+          {%- endif -%}
+        </div>
+      {%- endif -%}
+
+      <a class="custom-product-card__image-link" href="{{ product.url }}">
+        {%- if product.featured_image != blank -%}
+          <img
+            class="custom-product-card__image"
+            src="{{ product.featured_image | image_url: width: 720 }}"
+            srcset="
+              {{ product.featured_image | image_url: width: 360 }} 360w,
+              {{ product.featured_image | image_url: width: 540 }} 540w,
+              {{ product.featured_image | image_url: width: 720 }} 720w,
+              {{ product.featured_image | image_url: width: 900 }} 900w
+            "
+            sizes="(min-width: 990px) 25vw, (min-width: 750px) 33vw, 50vw"
+            alt="{{ product.featured_image.alt | default: product.title | escape }}"
+            width="{{ product.featured_image.width }}"
+            height="{{ product.featured_image.height }}"
+            loading="lazy"
+          >
+        {%- else -%}
+          <div class="custom-product-card__placeholder">
+            {{ 'product-1' | placeholder_svg_tag: 'custom-product-card__placeholder-svg' }}
+          </div>
+        {%- endif -%}
+      </a>
+    </div>
+
+    <div class="custom-product-card__content">
+      <h3 class="custom-product-card__title">
+        <a class="custom-product-card__title-link" href="{{ product.url }}">{{ product.title | escape }}</a>
+      </h3>
+      <div class="custom-product-card__price">
+        <span>{{ product.price | money }}</span>
+        {%- if on_sale -%}
+          <s class="custom-product-card__compare-price">{{ product.compare_at_price | money }}</s>
+        {%- endif -%}
+      </div>
+    </div>
+  </article>
+{%- endif -%}

@@ -1,6 +1,7 @@
 {{ 'template-collection.css' | asset_url | stylesheet_tag }}
 {{ 'component-card.css' | asset_url | stylesheet_tag }}
 {{ 'component-price.css' | asset_url | stylesheet_tag }}
+{{ 'custom-product-card.css' | asset_url | stylesheet_tag }}
 
 {% if section.settings.image_shape == 'blob' %}
   {{ 'mask-blobs.css' | asset_url | stylesheet_tag }}
@@ -179,7 +180,8 @@
                       skip_styles: skip_card_product_styles,
                       quick_add: section.settings.quick_add,
                       section_id: section.id,
-                      product_view_context: 'collection'
+                      product_view_context: 'collection',
+                      show_custom_badges: true
                     %}
                   </li>
                   {%- assign skip_card_product_styles = true -%}

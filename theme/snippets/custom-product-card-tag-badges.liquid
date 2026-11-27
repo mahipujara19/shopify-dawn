@@ -1,0 +1,16 @@
+{% doc %}
+  Renders Bestseller and New badges for a product.
+
+  @param {product} product - The product whose tags determine which badges to show.
+  @param {boolean} show_custom_badges - Whether to render tag badges.
+{% enddoc %}
+{%- if show_custom_badges -%}
+  {%- for tag in product.tags -%}
+    {%- assign normalized_tag = tag | downcase -%}
+    {%- if normalized_tag == 'bestseller' -%}
+      <span class="badge custom-product-card__badge custom-product-card__badge--bestseller">Bestseller</span>
+    {%- elsif normalized_tag == 'new' -%}
+      <span class="badge custom-product-card__badge custom-product-card__badge--new">New</span>
+    {%- endif -%}
+  {%- endfor -%}
+{%- endif -%}
